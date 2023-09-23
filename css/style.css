@@ -2,3 +2,57 @@ img {
   display: block;
   max-width: 100%;
 }
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+main {
+  width: 100vw;
+  height: 100vh;
+  padding: 0.6rem;
+  position: relative;
+}
+
+.image-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.data {
+  position: absolute;
+  top: 1.1rem;
+  left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.dimensions {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.tools {
+  position: absolute;
+  bottom: 1.1rem;
+  left: 1.1rem;
+  display: flex;
+  gap: 0.3rem;
+}
+
+#crop {
+  position: absolute;
+  top: 1.1rem;
+  right: 1.1rem;
+}
