@@ -1,5 +1,27 @@
 import Cropper from "./cropper.esm.js";
 
+const cssThemes = [
+  "darkly",
+  "journal",
+  "lumen",
+  "lux",
+  "morph",
+  "quartz",
+  "sketchy",
+  "solar",
+  "superhero",
+  "united",
+  "vapor",
+];
+
+const linkElement = document.createElement("link");
+linkElement.rel = "stylesheet";
+linkElement.type = "text/css";
+linkElement.href = `../css/themes/${
+  cssThemes[Math.floor(Math.random() * cssThemes.length)]
+}.css`;
+document.head.appendChild(linkElement);
+
 let width = 0;
 let height = 0;
 
