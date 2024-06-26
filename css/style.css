@@ -56,3 +56,10 @@ main {
   top: 1.1rem;
   right: 1.1rem;
 }
+
+.dropdown-container {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1000;
+}

@@ -34,7 +34,7 @@ const fileInputElement = document.getElementById("fileinput");
 const widthInputElement = document.getElementById("width");
 const heightInputElement = document.getElementById("height");
 const qualityInputElement = document.getElementById("quality");
-const cropButtonElement = document.getElementById("crop");
+const downloadOptions = document.querySelectorAll(".download-option");
 const rotateButtonElement = document.getElementById("rotate");
 const flipButtonElement = document.getElementById("flip");
 const resetButtonElement = document.getElementById("reset");
@@ -53,7 +53,6 @@ function updateDataAfterImageChange() {
   }, 50);
 }
 
-// get pasted image and change the src of the #image element
 window.addEventListener("paste", async function (e) {
   const items = e.clipboardData.items;
   if (items) {
@@ -71,7 +70,6 @@ window.addEventListener("paste", async function (e) {
   }
 });
 
-// listen for files dragged into the browser window
 window.addEventListener("dragover", function (e) {
   e.preventDefault();
   e.stopPropagation();
@@ -128,43 +126,57 @@ heightInputElement.addEventListener("input", function (e) {
   }
 });
 
-cropButtonElement.addEventListener("click", async function (e) {
-  const canvas = cropper.getCroppedCanvas();
-  // resize image
-  const resizedCanvas = document.createElement("canvas");
-  const resizedContext = resizedCanvas.getContext("2d");
-  resizedCanvas.width = width;
-  resizedCanvas.height = height;
-  resizedContext.drawImage(
-    canvas,
-    0,
-    0,
-    canvas.width,
-    canvas.height,
-    0,
-    0,
-    width,
-    height
-  );
-  // convert to webp
-  const croppedImageUrl = resizedCanvas.toDataURL(
-    "image/webp",
-    qualityInputElement.value / 100
-  );
-  // const croppedImageUrl = canvas.toDataURL("image/webp", 0.75);
-  // const croppedImage = await fetch(croppedImageUrl).then((res) => res.blob());
-  // // compress image and convert to webp
-  // const compressedImage = await imageCompression(croppedImage, {
-  //   maxWidthOrHeight: 800,
-  //   useWebWorker: true,
-  //   fileType: "webp",
-  //   initialQuality: 0.75,
-  // });
-  // download image
-  const link = document.createElement("a");
-  // link.href = URL.createObjectURL(compressedImage);
-  link.download = "cropped.webp";
-  link.href = croppedImageUrl;
-  link.click();
-  link.remove();
+downloadOptions.forEach((option) => {
+  option.addEventListener("click", async function (e) {
+    const format = e.target.getAttribute("data-format");
+    const canvas = cropper.getCroppedCanvas();
+    const resizedCanvas = document.createElement("canvas");
+    const resizedContext = resizedCanvas.getContext("2d");
+    resizedCanvas.width = width;
+    resizedCanvas.height = height;
+    resizedContext.drawImage(
+      canvas,
+      0,
+      0,
+      canvas.width,
+      canvas.height,
+      0,
+      0,
+      width,
+      height
+    );
+
+    let mimeType;
+    let extension;
+    switch (format) {
+      case "jpeg":
+        mimeType = "image/jpeg";
+        extension = "jpeg";
+        break;
+      case "png":
+        mimeType = "image/png";
+        extension = "png";
+        break;
+      case "avif":
+        mimeType = "image/avif";
+        extension = "avif";
+        break;
+      case "webp":
+      default:
+        mimeType = "image/webp";
+        extension = "webp";
+        break;
+    }
+
+    const croppedImageUrl = resizedCanvas.toDataURL(
+      mimeType,
+      qualityInputElement.value / 100
+    );
+
+    const link = document.createElement("a");
+    link.download = `cropped.${extension}`;
+    link.href = croppedImageUrl;
+    link.click();
+    link.remove();
+  });
 });
