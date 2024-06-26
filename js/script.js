@@ -1,26 +1,26 @@
 import Cropper from "./cropper.esm.js";
 
-// const cssThemes = [
-//   "darkly",
-//   "journal",
-//   "lumen",
-//   "lux",
-//   "morph",
-//   "quartz",
-//   "sketchy",
-//   "solar",
-//   "superhero",
-//   "united",
-//   "vapor",
-// ];
+const cssThemes = [
+  "darkly",
+  "journal",
+  "lumen",
+  "lux",
+  "morph",
+  "quartz",
+  "sketchy",
+  "solar",
+  "superhero",
+  "united",
+  "vapor",
+];
 
-// const linkElement = document.createElement("link");
-// linkElement.rel = "stylesheet";
-// linkElement.type = "text/css";
-// linkElement.href = `../css/themes/${
-//   cssThemes[Math.floor(Math.random() * cssThemes.length)]
-// }.css`;
-// document.head.appendChild(linkElement);
+const linkElement = document.createElement("link");
+linkElement.rel = "stylesheet";
+linkElement.type = "text/css";
+linkElement.href = `../css/themes/${
+  cssThemes[Math.floor(Math.random() * cssThemes.length)]
+}.css`;
+document.head.appendChild(linkElement);
 
 let width = 0;
 let height = 0;
@@ -40,7 +40,14 @@ const flipButtonElement = document.getElementById("flip");
 const resetButtonElement = document.getElementById("reset");
 const zoomInButtonElement = document.getElementById("zoomin");
 const zoomOutButtonElement = document.getElementById("zoomout");
-let cropper = new Cropper(imageElement, options);
+let cropper = null;
+
+function initializeCropper() {
+  cropper = new Cropper(imageElement, options);
+  cropper.on("ready", () => {
+    updateDataAfterImageChange();
+  });
+}
 
 function updateDataAfterImageChange() {
   setTimeout(() => {
@@ -62,9 +69,8 @@ window.addEventListener("paste", async function (e) {
         const URLObj = window.URL || window.webkitURL;
         const source = URLObj.createObjectURL(blob);
         imageElement.src = source;
-        cropper.destroy();
-        cropper = new Cropper(imageElement, options);
-        updateDataAfterImageChange();
+        if (cropper) cropper.destroy();
+        initializeCropper();
       }
     }
   }
@@ -82,9 +88,8 @@ window.addEventListener("drop", async function (e) {
   const URLObj = window.URL || window.webkitURL;
   const source = URLObj.createObjectURL(file);
   imageElement.src = source;
-  cropper.destroy();
-  cropper = new Cropper(imageElement, options);
-  updateDataAfterImageChange();
+  if (cropper) cropper.destroy();
+  initializeCropper();
 });
 
 fileInputElement.addEventListener("change", async function (e) {
@@ -92,44 +97,57 @@ fileInputElement.addEventListener("change", async function (e) {
   const URLObj = window.URL || window.webkitURL;
   const source = URLObj.createObjectURL(file);
   imageElement.src = source;
-  cropper.destroy();
-  cropper = new Cropper(imageElement, options);
-  updateDataAfterImageChange();
+  if (cropper) cropper.destroy();
+  initializeCropper();
 });
 
 rotateButtonElement.addEventListener("click", function (e) {
-  cropper.rotate(90);
+  if (cropper) cropper.rotate(90);
 });
+
 flipButtonElement.addEventListener("click", function (e) {
-  cropper.scaleX(-cropper.getData().scaleX);
+  if (cropper) cropper.scaleX(-cropper.getData().scaleX);
 });
+
 resetButtonElement.addEventListener("click", function (e) {
-  cropper.reset();
+  if (cropper) cropper.reset();
 });
+
 zoomInButtonElement.addEventListener("click", function (e) {
-  cropper.zoom(0.1);
+  if (cropper) cropper.zoom(0.1);
 });
+
 zoomOutButtonElement.addEventListener("click", function (e) {
-  cropper.zoom(-0.1);
+  if (cropper) cropper.zoom(-0.1);
 });
 
 widthInputElement.addEventListener("input", function (e) {
   if (widthInputElement.value) {
     width = widthInputElement.value;
-    cropper.setAspectRatio(width / height);
+    if (cropper) cropper.setAspectRatio(width / height);
   }
 });
+
 heightInputElement.addEventListener("input", function (e) {
   if (heightInputElement.value) {
     height = heightInputElement.value;
-    cropper.setAspectRatio(width / height);
+    if (cropper) cropper.setAspectRatio(width / height);
   }
 });
 
 downloadOptions.forEach((option) => {
   option.addEventListener("click", async function (e) {
+    if (!cropper) {
+      alert("No image loaded");
+      return;
+    }
     const format = e.target.getAttribute("data-format");
     const canvas = cropper.getCroppedCanvas();
+    if (!canvas) {
+      alert("Could not get cropped canvas");
+      return;
+    }
+
     const resizedCanvas = document.createElement("canvas");
     const resizedContext = resizedCanvas.getContext("2d");
     resizedCanvas.width = width;
@@ -180,3 +198,8 @@ downloadOptions.forEach((option) => {
     link.remove();
   });
 });
+
+// Initial cropper setup if image is already present
+if (imageElement.src) {
+  initializeCropper();
+}
